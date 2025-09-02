@@ -319,8 +319,8 @@ export default function NotificationsCard() {
               title={<>
                 <div style={{ maxWidth: 320 }}>
                   <b>Notifiarr Setup:</b><br/>
-                  Enter your Notifiarr API key and endpoint URL.<br/>
-                  Get your API key from your Notifiarr dashboard.<br/>
+                  Enter your Notifiarr endpoint URL.<br/>
+                  API key is optional - only needed if your endpoint requires authentication.<br/>
                   Endpoint URL is typically: <b>https://notifiarr.com/api/v1/notification/mousetrap</b><br/>
                   <a href="https://notifiarr.com" target="_blank" rel="noopener noreferrer">Visit Notifiarr</a>
                 </div>
@@ -334,7 +334,7 @@ export default function NotificationsCard() {
           </Box>
           <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
             <TextField
-              label="API Key"
+              label="API Key (Optional)"
               value={
                 showNotifiarr
                   ? (config.notifiarr?.api_key || "")
@@ -357,7 +357,7 @@ export default function NotificationsCard() {
               }}
             />
             <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
-              <Button variant="outlined" onClick={handleTestNotifiarr} disabled={testLoading || !config.notifiarr?.api_key || !config.notifiarr?.endpoint_url} sx={{ minWidth: 80 }}>
+              <Button variant="outlined" onClick={handleTestNotifiarr} disabled={testLoading || !config.notifiarr?.endpoint_url} sx={{ minWidth: 80 }}>
                 TEST
               </Button>
             </Box>

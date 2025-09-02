@@ -429,6 +429,20 @@ MouseTrap supports two ways to notify you of port check failures:
 
 ---
 
+## 🤝 Contributing
+
+We welcome contributions to MouseTrap! Whether you're fixing bugs, adding features, or improving documentation, your help is appreciated.
+
+**Quick Start for Contributors:**
+- Read our [Contributing Guide](docs/CONTRIBUTING.md) for detailed instructions on how to merge your changes into the main branch
+- Fork the repository or create a feature branch
+- Make your changes and test thoroughly
+- Create a Pull Request with a clear description
+
+For questions about merging branches or the contribution workflow, see [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md).
+
+---
+
 ## Logging & Debugging
 
 MouseTrap uses Python's standard logging with timestamps and log levels (DEBUG, INFO, WARNING, ERROR, CRITICAL).

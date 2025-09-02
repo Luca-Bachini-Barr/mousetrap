@@ -52,9 +52,9 @@ def test_smtp(payload: dict):
 def test_notifiarr(payload: dict):
     cfg = load_notify_config()
     notifiarr = cfg.get('notifiarr', {})
-    required = ['api_key', 'endpoint_url']
-    if not all(k in notifiarr for k in required):
-        raise HTTPException(status_code=400, detail="Notifiarr config incomplete.")
+    endpoint_url = notifiarr.get('endpoint_url')
+    if not endpoint_url:
+        raise HTTPException(status_code=400, detail="Notifiarr endpoint URL not set.")
     test_payload = {
         'event_type': 'test',
         'label': 'test-session',
@@ -63,6 +63,6 @@ def test_notifiarr(payload: dict):
         'details': {'test': True}
     }
     ok = send_notifiarr_notification(
-        notifiarr['api_key'], notifiarr['endpoint_url'], test_payload
+        endpoint_url, test_payload, notifiarr.get('api_key')
     )
     return {"success": ok}
