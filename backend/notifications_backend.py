@@ -50,12 +50,15 @@ def send_smtp_notification(
         logging.error(f"[Notify] SMTP failed: {e}")
         return False
 
-def send_notifiarr_notification(api_key: str, endpoint_url: str, payload: dict) -> bool:
+def send_notifiarr_notification(endpoint_url: str, payload: dict, api_key: str = None) -> bool:
     try:
         headers = {
-            'X-API-Key': api_key,
             'Content-Type': 'application/json'
         }
+        # Add API key header only if provided
+        if api_key:
+            headers['X-API-Key'] = api_key
+            
         # Format payload for Notifiarr
         notifiarr_payload = {
             'event': {
@@ -134,8 +137,8 @@ def notify_event(event_type: str, label: Optional[str] = None, status: Optional[
     # Notifiarr
     if rule.get("notifiarr"):
         notifiarr = cfg.get('notifiarr', {})
-        required = ['api_key', 'endpoint_url']
-        if all(k in notifiarr for k in required):
+        endpoint_url = notifiarr.get('endpoint_url')
+        if endpoint_url:
             send_notifiarr_notification(
-                notifiarr['api_key'], notifiarr['endpoint_url'], payload
+                endpoint_url, payload, notifiarr.get('api_key')
             )
