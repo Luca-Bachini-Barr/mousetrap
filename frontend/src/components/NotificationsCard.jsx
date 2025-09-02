@@ -8,7 +8,6 @@ import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 
 export default function NotificationsCard() {
   const [showWebhook, setShowWebhook] = useState(false);
-  const [showNotifiarr, setShowNotifiarr] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const defaultEvents = [
     { key: "port_monitor_failure", label: "Docker Port Monitor Failure" },
@@ -319,8 +318,7 @@ export default function NotificationsCard() {
               title={<>
                 <div style={{ maxWidth: 320 }}>
                   <b>Notifiarr Setup:</b><br/>
-                  Enter your Notifiarr endpoint URL.<br/>
-                  API key is optional - only needed if your endpoint requires authentication.<br/>
+                  Enter your Notifiarr endpoint URL and Discord channel ID.<br/>
                   Endpoint URL is typically: <b>https://notifiarr.com/api/v1/notification/mousetrap</b><br/>
                   <a href="https://notifiarr.com" target="_blank" rel="noopener noreferrer">Visit Notifiarr</a>
                 </div>
@@ -334,42 +332,27 @@ export default function NotificationsCard() {
           </Box>
           <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
             <TextField
-              label="API Key (Optional)"
-              value={
-                showNotifiarr
-                  ? (config.notifiarr?.api_key || "")
-                  : (config.notifiarr?.api_key ? `********${config.notifiarr.api_key.slice(-6)}` : "")
-              }
-              onChange={e => handleNotifiarrChange("api_key", e.target.value)}
-              size="small"
-              sx={{ width: 350, maxWidth: 600 }}
-              type={showNotifiarr ? "text" : "password"}
-              InputProps={{
-                endAdornment: (
-                  <IconButton
-                    aria-label={showNotifiarr ? "Hide API key" : "Show API key"}
-                    onClick={() => setShowNotifiarr(v => !v)}
-                    edge="end"
-                  >
-                    {showNotifiarr ? <VisibilityOffIcon /> : <VisibilityIcon />}
-                  </IconButton>
-                )
-              }}
-            />
-            <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
-              <Button variant="outlined" onClick={handleTestNotifiarr} disabled={testLoading || !config.notifiarr?.endpoint_url} sx={{ minWidth: 80 }}>
-                TEST
-              </Button>
-            </Box>
-          </Box>
-          <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-            <TextField
               label="Endpoint URL"
               value={config.notifiarr?.endpoint_url || ""}
               onChange={e => handleNotifiarrChange("endpoint_url", e.target.value)}
               size="small"
               sx={{ width: 500, maxWidth: 700 }}
             />
+          </Box>
+          <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+            <TextField
+              label="Discord Channel ID"
+              value={config.notifiarr?.channel_id || ""}
+              onChange={e => handleNotifiarrChange("channel_id", e.target.value)}
+              size="small"
+              sx={{ width: 350, maxWidth: 600 }}
+              type="number"
+            />
+            <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
+              <Button variant="outlined" onClick={handleTestNotifiarr} disabled={testLoading || !config.notifiarr?.endpoint_url} sx={{ minWidth: 80 }}>
+                TEST
+              </Button>
+            </Box>
           </Box>
           <Divider sx={{ my: 3 }} />
           <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>

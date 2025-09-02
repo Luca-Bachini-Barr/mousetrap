@@ -63,6 +63,6 @@ def test_notifiarr(payload: dict):
         'details': {'test': True}
     }
     ok = send_notifiarr_notification(
-        endpoint_url, test_payload, notifiarr.get('api_key')
+        endpoint_url, test_payload, notifiarr.get('channel_id')
     )
     return {"success": ok}
