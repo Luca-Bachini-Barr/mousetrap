@@ -50,29 +50,50 @@ def send_smtp_notification(
         logging.error(f"[Notify] SMTP failed: {e}")
         return False
 
-def send_notifiarr_notification(endpoint_url: str, payload: dict, api_key: str = None) -> bool:
+def send_notifiarr_notification(endpoint_url: str, payload: dict, channel_id: int = None) -> bool:
     try:
         headers = {
             'Content-Type': 'application/json'
         }
-        # Add API key header only if provided
-        if api_key:
-            headers['X-API-Key'] = api_key
-            
-        # Format payload for Notifiarr
-        notifiarr_payload = {
-            'event': {
-                'name': payload.get('event_type', 'MouseTrap Event'),
-                'description': payload.get('message', ''),
-            },
-            'service': {
-                'name': 'MouseTrap',
-                'id': payload.get('label', 'default')
-            },
-            'extra': payload.get('details', {})
-        }
+        
+        # Build notification details
+        title = f"[MouseTrap] {payload.get('event_type', 'Event')}"
         if payload.get('status'):
-            notifiarr_payload['event']['status'] = payload['status']
+            title += f" - {payload.get('status')}"
+        
+        description = payload.get('message', '')
+        if payload.get('label'):
+            description = f"Session: {payload.get('label')}\n{description}"
+        
+        # Add details if present
+        if payload.get('details'):
+            details_text = ""
+            for key, value in payload.get('details', {}).items():
+                details_text += f"\n{key}: {value}"
+            if details_text:
+                description += f"\n\nDetails:{details_text}"
+        
+        # Format payload for Notifiarr Discord format
+        notifiarr_payload = {
+            "notification": {
+                "update": False,
+                "name": "MouseTrap",
+                "event": payload.get('event_type', 'mousetrap_event')
+            },
+            "discord": {
+                "color": "5865F2",  # Discord blue color
+                "text": {
+                    "title": title,
+                    "description": description
+                }
+            }
+        }
+        
+        # Add channel ID if provided
+        if channel_id:
+            notifiarr_payload["discord"]["ids"] = {
+                "channel": channel_id
+            }
         
         resp = requests.post(endpoint_url, json=notifiarr_payload, headers=headers, timeout=10)
         resp.raise_for_status()
@@ -140,5 +161,5 @@ def notify_event(event_type: str, label: Optional[str] = None, status: Optional[
         endpoint_url = notifiarr.get('endpoint_url')
         if endpoint_url:
             send_notifiarr_notification(
-                endpoint_url, payload, notifiarr.get('api_key')
+                endpoint_url, payload, notifiarr.get('channel_id')
             )
