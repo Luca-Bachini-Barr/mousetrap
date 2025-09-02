@@ -350,21 +350,37 @@ export default function PerkAutomationCard({
 
   return (
   <Card sx={{ mb: 3, borderRadius: 2 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer', px: 2, pt: 2, pb: 1.5, minHeight: 56 }} onClick={() => setExpanded(e => !e)}>
-        <Typography variant="h6" sx={{}}>
-          Perk Purchase & Automation
-        </Typography>
-        <Box sx={{ mx: 2, minWidth: 80 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          cursor: 'pointer',
+          px: 2,
+          pt: 2,
+          pb: 1.5,
+          minHeight: 56,
+        }}
+        onClick={() => setExpanded(e => !e)}
+      >
+        {/* Left: Title */}
+        <Box sx={{ flex: 1, display: 'flex', alignItems: 'center' }}>
+          <Typography variant="h6">Perk Purchase & Automation</Typography>
+        </Box>
+        {/* Center: Timer */}
+        <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
           <Typography variant="body2" sx={{ color: 'primary.main', fontWeight: 600 }}>
             Next update: {formatTimer(timerSeconds)}
           </Typography>
         </Box>
-        <Typography variant="body1" sx={{ mr: 2, color: 'text.secondary' }}>
-          Points: <b>{points !== null ? points : "N/A"}</b>
-        </Typography>
-        <IconButton size="small">
-          {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-        </IconButton>
+        {/* Right: Points and Icon */}
+        <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
+          <Typography variant="body1" sx={{ color: 'text.secondary', mr: 2 }}>
+            Points: <b>{points !== null ? points : "N/A"}</b>
+          </Typography>
+          <IconButton size="small">
+            {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+          </IconButton>
+        </Box>
       </Box>
       <Collapse in={expanded} timeout="auto" unmountOnExit>
         <CardContent sx={{ pt: 0 }}>
