@@ -1,7 +1,7 @@
 import os
 import yaml
 from fastapi import APIRouter, HTTPException, Request
-from backend.notifications_backend import send_webhook_notification, send_smtp_notification, NOTIFY_CONFIG_PATH
+from backend.notifications_backend import send_webhook_notification, send_smtp_notification, send_notifiarr_notification, NOTIFY_CONFIG_PATH
 
 router = APIRouter()
 
@@ -45,5 +45,24 @@ def test_smtp(payload: dict):
     ok = send_smtp_notification(
         smtp['host'], smtp['port'], smtp['username'], smtp['password'],
         smtp['to_email'], payload.get('subject', 'Test'), payload.get('body', 'Test'), smtp.get('use_tls', True)
+    )
+    return {"success": ok}
+
+@router.post("/notify/test/notifiarr")
+def test_notifiarr(payload: dict):
+    cfg = load_notify_config()
+    notifiarr = cfg.get('notifiarr', {})
+    required = ['api_key', 'endpoint_url']
+    if not all(k in notifiarr for k in required):
+        raise HTTPException(status_code=400, detail="Notifiarr config incomplete.")
+    test_payload = {
+        'event_type': 'test',
+        'label': 'test-session',
+        'status': 'SUCCESS',
+        'message': payload.get('message', 'Test notification from MouseTrap'),
+        'details': {'test': True}
+    }
+    ok = send_notifiarr_notification(
+        notifiarr['api_key'], notifiarr['endpoint_url'], test_payload
     )
     return {"success": ok}

@@ -8,6 +8,7 @@ import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 
 export default function NotificationsCard() {
   const [showWebhook, setShowWebhook] = useState(false);
+  const [showNotifiarr, setShowNotifiarr] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const defaultEvents = [
     { key: "port_monitor_failure", label: "Docker Port Monitor Failure" },
@@ -22,7 +23,7 @@ export default function NotificationsCard() {
     { key: "inactive_hit_and_run", label: "Hit & Run - Inactive (Not Seeding)" },
     // Add more as needed
   ];
-  const [config, setConfig] = useState({ webhook_url: "", smtp: {}, event_rules: {} });
+  const [config, setConfig] = useState({ webhook_url: "", smtp: {}, notifiarr: {}, event_rules: {} });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
@@ -63,11 +64,14 @@ export default function NotificationsCard() {
   const handleSmtpChange = (field, value) => {
     setConfig(cfg => ({ ...cfg, smtp: { ...cfg.smtp, [field]: value } }));
   };
+  const handleNotifiarrChange = (field, value) => {
+    setConfig(cfg => ({ ...cfg, notifiarr: { ...cfg.notifiarr, [field]: value } }));
+  };
 
   const handleEventRuleChange = (eventKey, channel, checked) => {
     setConfig(cfg => {
       const rules = { ...cfg.event_rules };
-      if (!rules[eventKey]) rules[eventKey] = { email: false, webhook: false };
+      if (!rules[eventKey]) rules[eventKey] = { email: false, webhook: false, notifiarr: false };
       rules[eventKey][channel] = checked;
       return { ...cfg, event_rules: rules };
     });
@@ -124,6 +128,23 @@ export default function NotificationsCard() {
     }
   };
 
+  const handleTestNotifiarr = async () => {
+    setTestLoading(true); setTestResult(null);
+    try {
+      const res = await fetch("/api/notify/test/notifiarr", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: "Test notification from MouseTrap" })
+      });
+      const data = await res.json();
+      setTestResult(data.success ? "Notifiarr notification sent!" : "Notifiarr failed.");
+    } catch {
+      setTestResult("Notifiarr failed.");
+    } finally {
+      setTestLoading(false);
+    }
+  };
+
   if (loading) return <Box sx={{ p: 3, textAlign: 'center' }}><CircularProgress /></Box>;
 
   return (
@@ -164,6 +185,13 @@ export default function NotificationsCard() {
                         onChange={e => handleEventRuleChange(ev.key, 'webhook', e.target.checked)}
                       />}
                       label="Webhook"
+                    />
+                    <FormControlLabel
+                      control={<Checkbox
+                        checked={!!config.event_rules?.[ev.key]?.notifiarr}
+                        onChange={e => handleEventRuleChange(ev.key, 'notifiarr', e.target.checked)}
+                      />}
+                      label="Notifiarr"
                     />
                   </Box>
                 </Box>
@@ -283,6 +311,65 @@ export default function NotificationsCard() {
                 TEST
               </Button>
             </Box>
+          </Box>
+          <Divider sx={{ my: 3 }} />
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+            <Typography variant="subtitle1">Notifiarr</Typography>
+            <Tooltip
+              title={<>
+                <div style={{ maxWidth: 320 }}>
+                  <b>Notifiarr Setup:</b><br/>
+                  Enter your Notifiarr API key and endpoint URL.<br/>
+                  Get your API key from your Notifiarr dashboard.<br/>
+                  Endpoint URL is typically: <b>https://notifiarr.com/api/v1/notification/mousetrap</b><br/>
+                  <a href="https://notifiarr.com" target="_blank" rel="noopener noreferrer">Visit Notifiarr</a>
+                </div>
+              </>}
+              arrow
+            >
+              <IconButton size="small" sx={{ ml: 1 }}>
+                <InfoOutlinedIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          </Box>
+          <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+            <TextField
+              label="API Key"
+              value={
+                showNotifiarr
+                  ? (config.notifiarr?.api_key || "")
+                  : (config.notifiarr?.api_key ? `********${config.notifiarr.api_key.slice(-6)}` : "")
+              }
+              onChange={e => handleNotifiarrChange("api_key", e.target.value)}
+              size="small"
+              sx={{ width: 350, maxWidth: 600 }}
+              type={showNotifiarr ? "text" : "password"}
+              InputProps={{
+                endAdornment: (
+                  <IconButton
+                    aria-label={showNotifiarr ? "Hide API key" : "Show API key"}
+                    onClick={() => setShowNotifiarr(v => !v)}
+                    edge="end"
+                  >
+                    {showNotifiarr ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                  </IconButton>
+                )
+              }}
+            />
+            <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
+              <Button variant="outlined" onClick={handleTestNotifiarr} disabled={testLoading || !config.notifiarr?.api_key || !config.notifiarr?.endpoint_url} sx={{ minWidth: 80 }}>
+                TEST
+              </Button>
+            </Box>
+          </Box>
+          <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+            <TextField
+              label="Endpoint URL"
+              value={config.notifiarr?.endpoint_url || ""}
+              onChange={e => handleNotifiarrChange("endpoint_url", e.target.value)}
+              size="small"
+              sx={{ width: 500, maxWidth: 700 }}
+            />
           </Box>
           <Divider sx={{ my: 3 }} />
           <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
