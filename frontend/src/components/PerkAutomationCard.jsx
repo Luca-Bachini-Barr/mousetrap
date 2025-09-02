@@ -34,6 +34,9 @@ export default function PerkAutomationCard({
   onActionComplete = () => {},
 }) {
   const { sessionLabel, points, setPoints } = useSession();
+    // Timer state for automation refresh (10 min = 600 sec)
+    const [timerSeconds, setTimerSeconds] = useState(600);
+    const [lastUpdate, setLastUpdate] = useState(Date.now());
   // Local state for automation toggles, initialized from props if provided
   const [autoWedge, setAutoWedgeLocal] = useState(_autoWedge ?? false);
   const [autoVIP, setAutoVIPLocal] = useState(_autoVIP ?? false);
@@ -89,7 +92,7 @@ export default function PerkAutomationCard({
   // Load automation settings from session on mount/session change
   useEffect(() => {
     if (!sessionLabel) return;
-    fetch(`/api/session/${encodeURIComponent(sessionLabel)}`)
+  fetch(`/api/session/${encodeURIComponent(sessionLabel)}`)
       .then(res => res.json())
       .then(cfg => {
         const pa = cfg.perk_automation || {};
@@ -120,11 +123,32 @@ export default function PerkAutomationCard({
           username = cfg.last_status.raw.username;
         }
         setCurrentUsername(username);
+  // Reset timer on automation update
+  setLastUpdate(Date.now());
+  setTimerSeconds(600);
       });
     fetch('/api/automation/guardrails')
       .then(res => res.json())
       .then(data => setGuardrails(data));
   }, [sessionLabel]);
+  // Timer countdown effect
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTimerSeconds(prev => {
+        if (prev > 0) return prev - 1;
+        // Optionally, trigger refresh or reset timer here
+        return 0;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [lastUpdate]);
+
+  // Format timer as mm:ss
+  const formatTimer = (secs) => {
+    const m = Math.floor(secs / 60).toString().padStart(2, '0');
+    const s = (secs % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+  };
 
   // Guardrail logic: check if another session with same username has automation enabled
   useEffect(() => {
@@ -327,9 +351,14 @@ export default function PerkAutomationCard({
   return (
   <Card sx={{ mb: 3, borderRadius: 2 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer', px: 2, pt: 2, pb: 1.5, minHeight: 56 }} onClick={() => setExpanded(e => !e)}>
-        <Typography variant="h6" sx={{ flexGrow: 1 }}>
+        <Typography variant="h6" sx={{}}>
           Perk Purchase & Automation
         </Typography>
+        <Box sx={{ mx: 2, minWidth: 80 }}>
+          <Typography variant="body2" sx={{ color: 'primary.main', fontWeight: 600 }}>
+            Next update: {formatTimer(timerSeconds)}
+          </Typography>
+        </Box>
         <Typography variant="body1" sx={{ mr: 2, color: 'text.secondary' }}>
           Points: <b>{points !== null ? points : "N/A"}</b>
         </Typography>
