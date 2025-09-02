@@ -392,7 +392,7 @@ Adjust paths and environment variables as needed for your Unraid setup.
 
 ## Notifications
 
-MouseTrap supports notifications via Email (SMTP) and Webhook (including Discord). Configure these in the Notifications card in the UI.
+MouseTrap supports notifications via Email (SMTP), Webhook (including Discord), and Notifiarr. Configure these in the Notifications card in the UI.
 
 ### Email (SMTP)
 
@@ -409,13 +409,22 @@ MouseTrap supports notifications via Email (SMTP) and Webhook (including Discord
 - Enter your webhook URL in the UI. For Discord, check the "Discord" box to send Discord-compatible messages.
 - You can test both Email and Webhook notifications directly from the UI.
 
+### Notifiarr
+
+- [Notifiarr](https://notifiarr.com) is a notification service that consolidates alerts from various applications.
+- Enter your Notifiarr API key and endpoint URL in the UI.
+- Get your API key from your Notifiarr dashboard after creating an account.
+- Endpoint URL is typically: `https://notifiarr.com/api/v1/notification/mousetrap`
+- You can test Notifiarr notifications directly from the UI.
+- Notifiarr supports advanced routing, filtering, and forwarding to multiple platforms (Discord, Slack, etc.).
+
 ### Port Monitor Notifications: Global vs Per-Port
 
 MouseTrap supports two ways to notify you of port check failures:
 
 - **Global Notification Rule:**
   - In the Notifications card, enable "Port Monitor Failure" for global notifications.
-  - Any port check failure will trigger a notification via the selected channels (email/webhook/Discord).
+  - Any port check failure will trigger a notification via the selected channels (email/webhook/Notifiarr).
   - Use this for a simple, all-or-nothing approach.
 
 ---

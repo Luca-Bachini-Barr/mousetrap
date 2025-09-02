@@ -50,6 +50,34 @@ def send_smtp_notification(
         logging.error(f"[Notify] SMTP failed: {e}")
         return False
 
+def send_notifiarr_notification(api_key: str, endpoint_url: str, payload: dict) -> bool:
+    try:
+        headers = {
+            'X-API-Key': api_key,
+            'Content-Type': 'application/json'
+        }
+        # Format payload for Notifiarr
+        notifiarr_payload = {
+            'event': {
+                'name': payload.get('event_type', 'MouseTrap Event'),
+                'description': payload.get('message', ''),
+            },
+            'service': {
+                'name': 'MouseTrap',
+                'id': payload.get('label', 'default')
+            },
+            'extra': payload.get('details', {})
+        }
+        if payload.get('status'):
+            notifiarr_payload['event']['status'] = payload['status']
+        
+        resp = requests.post(endpoint_url, json=notifiarr_payload, headers=headers, timeout=10)
+        resp.raise_for_status()
+        return True
+    except Exception as e:
+        logging.error(f"[Notify] Notifiarr failed: {e}")
+        return False
+
 
 import yaml
 
@@ -63,7 +91,7 @@ from typing import Optional, Dict
 
 def notify_event(event_type: str, label: Optional[str] = None, status: Optional[str] = None, message: Optional[str] = None, details: Optional[Dict] = None):
     """
-    Send notification (webhook and/or SMTP) for important events.
+    Send notification (webhook, SMTP, and/or Notifiarr) for important events.
     event_type: e.g. 'port_monitor_failure', 'automation_success', 'automation_failure'
     label: session label or global
     status: e.g. 'FAILED', 'SUCCESS'
@@ -72,9 +100,9 @@ def notify_event(event_type: str, label: Optional[str] = None, status: Optional[
     """
     cfg = load_notify_config()
     event_rules = cfg.get('event_rules', {})
-    rule = event_rules.get(event_type, {"email": False, "webhook": False})
+    rule = event_rules.get(event_type, {"email": False, "webhook": False, "notifiarr": False})
     # Prevent spam: only send if at least one channel is enabled for this event
-    if not rule.get("email") and not rule.get("webhook"):
+    if not rule.get("email") and not rule.get("webhook") and not rule.get("notifiarr"):
         return
     # Always prepend session name to the message if label is present
     session_prefix = f"Session: {label}, " if label else ""
@@ -102,4 +130,12 @@ def notify_event(event_type: str, label: Optional[str] = None, status: Optional[
             send_smtp_notification(
                 smtp['host'], smtp['port'], smtp['username'], smtp['password'],
                 smtp['to_email'], subject, body, smtp.get('use_tls', True)
+            )
+    # Notifiarr
+    if rule.get("notifiarr"):
+        notifiarr = cfg.get('notifiarr', {})
+        required = ['api_key', 'endpoint_url']
+        if all(k in notifiarr for k in required):
+            send_notifiarr_notification(
+                notifiarr['api_key'], notifiarr['endpoint_url'], payload
             )
